@@ -1,0 +1,89 @@
+title: "Project Name, e.g. Address Shredding"
+description: "Project description, e.g. Named Entity Recognition"
+
+# Reference via ${vars.var_name}
+vars:
+  name: "repo-name"
+  lang: "en"
+  gpu_id: -1
+  version: "1.0.0"
+  train: "train.spacy"
+  dev: "dev.spacy"
+  config: "config.cfg"
+
+directories: ["assets", "corpus", "configs", "training", "scripts", "packages", "wheels"]
+
+assets:
+  - dest: "assets/train.spacy"
+    description: "Training data"
+
+  - dest: "assets/dev.spacy"
+    description: "Development data"
+
+# Run via "spacy project run [workflow]"
+workflows:
+  all:
+    - debug
+    - train
+    - evaluate
+    - package
+    - visualize
+
+# Run via "spacy project run [command]"
+commands:
+
+  - name: debug
+    help: "Analyze, debug and validate training and development data"
+    script:
+      - "python -m spacy debug data configs/${vars.config} --paths.train corpus/${vars.train} --paths.dev corpus/${vars.dev}"
+    deps:
+      - "configs/${vars.config}"
+
+  - name: train
+    help: "Train model"
+    script:
+      - "python -m spacy train configs/${vars.config} --output training/ --paths.train corpus/${vars.train} --paths.dev corpus/${vars.dev} --gpu-id ${vars.gpu_id}"
+    deps:
+      - "configs/${vars.config}"
+      - "corpus/${vars.train}"
+      - "corpus/${vars.dev}"
+    outputs:
+      - "training/model-best"
+
+  - name: evaluate
+    help: "Evaluate the model and export metrics"
+    script:
+      - "python -m spacy evaluate training/model-best corpus/${vars.dev} --output training/model-best-metrics.json"
+    deps:
+      - "corpus/${vars.dev}"
+      - "training/model-best"
+    outputs:
+      - "training/model-best-metrics.json"
+
+  - name: package
+    help: "Package the trained model as a pip package"
+    script:
+      - "python -m spacy package training/model-best packages --build wheel --name ${vars.name} --version ${vars.version} --force"
+    deps:
+      - "training/model-best"
+
+  - name: wheel
+    help: "Copy built .whl to wheels to track"
+    script:
+      - "Copy-Item -Path packages/${vars.lang}_${vars.name}-${vars.version}/dist/${vars.lang}_${vars.name}-${vars.version}-py3-none-any.whl -Destination wheels/${vars.lang}_${vars.name}-${vars.version}-py3-none-any.whl"
+    deps:
+      - "packages/${vars.lang}_${vars.name}-${vars.version}/dist/${vars.lang}_${vars.name}-${vars.version}-py3-none-any.whl"
+
+  - name: visualize
+    help: "Visualize the model's output interactively using Streamlit"
+    script:
+      - "streamlit run scripts/visualize.py ./training/model-best \"example text \""
+    deps:
+      - "scripts/visualize.py"
+      - "training/model-best"
+
+  - name: clean
+    help: "Remove intermediate training files"
+    script:
+      - "rm -rf packages/*"
+      - "rm -rf training/*"

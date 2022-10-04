@@ -1,0 +1,13 @@
+version: "3.8"
+
+services:
+    azure:
+        build: .
+        image: ${acr}.azurecr.io/${repo}:dash
+        container_name: ${repo}
+        ports:
+            - 8080:80
+        volumes:
+            - ./data:/app/data
+        environment:
+            - AzureWebJobsAzureWebJobsStorage=${AzureWebJobsAzureWebJobsStorage}

@@ -1,0 +1,20 @@
+- prodigy.json database path is /prodigy/
+- Add all prodigy commands used for annotating and training
+- component = [ner, textcat]
+
+# --------------------------------- MANUAL ANNOTATION ----------------------------------
+python -m prodigy textcat.manual training_xxx ./data/dataset_0_xxx.jsonl --label LBA1,LBA2 --exclusive
+python -m prodigy ner.manual training_xxx en_core_web_md ./data/dataset_0_xxx.jsonl  --label LBA1,LBA2 --patterns data/patterns.jsonl
+
+# --------------------------------- DB-IN ANNOTATIONS ----------------------------------
+python -m prodigy db-in training_xxx ./data/dataset_annotated_xxx.jsonl
+
+# --------------------------------- ACTIVE ANNOTATION ----------------------------------
+python -m prodigy component.teach training_active spacy_model ./data/dataset_active.jsonl --label LBA1,LBA2 --patterns ./data/patterns.jsonl
+
+# ---------------------------------- MERGING DATASETS ----------------------------------
+python -m prodigy db-merge training_xxx1,training_xxx2 training_out
+
+# ---------------------------------- CONVERT-TO-SPACY ----------------------------------
+python -m prodigy data-to-spacy ./data/train.json ./data/dev.json --lang en --ner training_xxx
+python -m prodigy data-to-spacy ./data/train.json ./data/dev.json --lang en --textcat training_xxx --textcat-exclusive

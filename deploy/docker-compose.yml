@@ -1,0 +1,12 @@
+version: "3.8"
+
+services:
+    azure:
+        build: .
+        image: ${acr}.azurecr.io/${repo}:v1
+        container_name: ${repo}
+        ports:
+            - 8080:80
+        environment:
+            - AzureWebJobsAzureWebJobsStorage=${AzureWebJobsAzureWebJobsStorage}
+            - TRANSLATOR_API_KEY=${TRANSLATOR_API_KEY}

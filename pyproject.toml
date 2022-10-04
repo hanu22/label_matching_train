@@ -10,6 +10,7 @@ pandas = "^1"
 xlrd = "^2"
 scikit-learn = "^1"
 spacy = {extras = ["cuda117", "transformers", "lookups"], version = "^3"}
+tensorflow = "^2.10.0"
 
 [tool.poetry.dev-dependencies]
 black = "*"
